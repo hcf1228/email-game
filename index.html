@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email 寫作練習｜洪瓊芳老師</title>
+
+<!-- ═══════════════════════════════════
+  ★ 部署前只需填這兩個設定 ★
+
+  步驟一：取得 Claude API Key
+  → 前往 https://console.anthropic.com
+  → 登入 → API Keys → Create Key → 複製貼上
+
+  步驟二：取得 JSONBin API Key（免費儲存成績）
+  → 前往 https://jsonbin.io
+  → 免費註冊 → 點右上角帳號 → API Keys → 複製 Secret Key
+
+  步驟三：部署到 Netlify
+  → 把這個檔案改名 index.html
+  → 拖到 https://netlify.com → 得到網址
+  → 把網址貼給學生！
+═══════════════════════════════════ -->
+<script>
+const CLAUDE_KEY  = "貼上你的 Claude API Key（sk-ant-...）";
+const JSONBIN_KEY = "貼上你的 JSONBin Secret Key（$2b$...）";
+const BIN_ID      = "";   // ← 留空，第一次執行自動建立
+const TEACHER_PW  = "teacher2025";  // 教師密碼，可自行修改
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a2744;--navy2:#253460;--gold:#d4900a;--gold2:#f0b429;
+  --paper:#fdfcf8;--paper2:#f3f0e6;--paper3:#e6e1d0;
+  --ink:#1c1c2e;--ink2:#3a3a52;--ink3:#7a7a96;
+  --green:#1a8c49;--greenl:#e6f7ee;
+  --red:#bf3b2b;--redl:#fdf0ee;
+  --blue:#1a6ea6;--bluel:#e6f2fb;
+  --amber:#c07800;--amberl:#fef5e4;
+  --bd:#d5d0c0;--r:12px;--rsm:7px;
+  --sh:0 2px 10px rgba(26,39,68,.09);
+  --shlg:0 8px 32px rgba(26,39,68,.14);
+}
+body{font-family:'Noto Serif TC','Georgia',serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.7}
+input,textarea,select,button{font-family:inherit;font-size:inherit}
+a{color:var(--blue)}
+
+/* topbar */
+.bar{background:var(--navy);color:#cdd8f0;padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
+.bar-l{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.bar-l b{color:var(--gold2)}
+.bar-r{font-size:12px;color:#8898cc;display:flex;align-items:center;gap:10px}
+.bar-name{color:#cdd8f0;font-weight:600}
+.lvbadge{background:var(--gold);color:#fff;padding:2px 9px;border-radius:11px;font-size:11px;font-weight:700;font-family:-apple-system,sans-serif}
+
+/* layout */
+.wrap{max-width:660px;margin:0 auto;padding:0 1rem 4rem}
+
+/* screens */
+.screen{display:none}
+.screen.on{display:block}
+#S0.on{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 43px);padding:2rem 1rem}
+
+/* hero */
+.hero{text-align:center;margin-bottom:2rem}
+.hero-i{font-size:54px;line-height:1;margin-bottom:.75rem;display:block}
+.hero h1{font-size:25px;font-weight:700}
+.hero p{font-size:13px;color:var(--ink3);margin-top:.3rem;font-family:-apple-system,sans-serif}
+
+/* login box */
+.lbox{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:1.75rem;width:100%;max-width:390px;box-shadow:var(--shlg)}
+.tabs{display:flex;background:var(--paper2);border-radius:var(--rsm);padding:3px;gap:3px;margin-bottom:1.4rem}
+.tab{flex:1;padding:8px;text-align:center;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink3);border:none;background:none;font-family:-apple-system,sans-serif;transition:all .15s}
+.tab.on{background:#fff;color:var(--ink);box-shadow:var(--sh)}
+.fld{margin-bottom:.85rem}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:5px;font-family:-apple-system,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.fld input,.fld select{width:100%;border:1.5px solid var(--bd);border-radius:var(--rsm);padding:10px 12px;font-size:15px;color:var(--ink);background:#fff;outline:none;transition:border-color .15s}
+.fld input:focus,.fld select:focus{border-color:var(--navy)}
+.hint{font-size:12px;color:var(--ink3);text-align:center;margin-top:.75rem;font-family:-apple-system,sans-serif}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 22px;border-radius:var(--rsm);font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .15s;font-family:-apple-system,sans-serif}
+.bnavy{background:var(--navy);color:#fff}.bnavy:hover{background:var(--navy2)}
+.bghost{background:transparent;color:var(--ink2);border:1.5px solid var(--bd)}.bghost:hover{background:var(--paper2)}
+.bgold{background:var(--gold);color:#fff}.bgold:hover{background:#b8800a}
+.bfull{width:100%;margin-bottom:.5rem}
+
+/* progress */
+.pgbar{display:flex;gap:5px;margin:1rem 0}
+.pseg{flex:1;height:5px;border-radius:3px;background:var(--paper3);transition:background .3s}
+.pseg.done{background:var(--green)}.pseg.cur{background:var(--gold)}
+
+/* card */
+.card{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--sh)}
+
+/* mission */
+.mtag{font-size:11px;font-weight:700;color:var(--gold);font-family:-apple-system,sans-serif;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem}
+.mtitle{font-size:21px;font-weight:700;color:var(--navy);margin-bottom:.75rem}
+.mscene{background:var(--paper2);border-left:4px solid var(--gold);padding:.875rem 1rem;border-radius:0 var(--rsm) var(--rsm) 0;font-size:14px;color:var(--ink2);line-height:1.85;margin-bottom:1rem}
+.mscene em{font-style:normal;color:var(--navy);font-weight:700}
+.tips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+.tip{background:var(--amberl);border:1px solid #efd080;color:var(--amber);padding:4px 10px;border-radius:14px;font-size:12px;font-weight:700;font-family:-apple-system,sans-serif}
+.cltitle{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem;font-family:-apple-system,sans-serif}
+.clist{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:.5rem}
+.ci{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:var(--rsm);border:1px solid var(--bd);background:var(--paper2);font-size:13px;color:var(--ink2);font-family:-apple-system,sans-serif;transition:all .2s}
+.ci.on{background:var(--greenl);border-color:#9fddb8;color:#145c2f}
+.cdot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
+.ci.on .cdot{background:var(--green);border-color:var(--green);color:#fff}
+
+/* composer */
+.cmp{background:#fff;border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:1rem}
+.crow{display:flex;align-items:flex-start;padding:9px 13px;border-bottom:1px solid var(--paper3);gap:10px}
+.clbl{font-size:12px;color:var(--ink3);font-weight:700;min-width:48px;padding-top:2px;font-family:-apple-system,sans-serif}
+.crow input{flex:1;border:none;background:transparent;font-size:14px;color:var(--ink);outline:none}
+.cbody textarea{width:100%;padding:11px 13px;border:none;background:transparent;font-size:14px;color:var(--ink);outline:none;resize:none;min-height:170px;line-height:1.85;font-family:inherit}
+.cfoot{padding:8px 13px;background:var(--paper2);border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);font-family:-apple-system,sans-serif}
+
+/* result */
+.sring{width:114px;height:114px;border-radius:50%;border:6px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto .875rem}
+.sring .sn{font-size:40px;font-weight:700;line-height:1}
+.sring .sl{font-size:11px;font-weight:700;opacity:.6;font-family:-apple-system,sans-serif}
+.gA .sring{border-color:var(--green);color:var(--green)}
+.gB .sring{border-color:var(--blue);color:var(--blue)}
+.gC .sring{border-color:var(--amber);color:var(--amber)}
+.gD .sring{border-color:var(--red);color:var(--red)}
+.gword{font-size:18px;font-weight:700;margin-bottom:.2rem}
+.gsub{font-size:13px;color:var(--ink3);font-family:-apple-system,sans-serif}
+.barlist{display:flex;flex-direction:column;gap:9px}
+.brow{display:flex;align-items:center;gap:10px;font-size:13px;font-family:-apple-system,sans-serif}
+.bname{width:72px;color:var(--ink2);font-weight:600}
+.btrack{flex:1;height:7px;background:var(--paper3);border-radius:4px;overflow:hidden}
+.bfill{height:100%;border-radius:4px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.bval{width:36px;text-align:right;font-weight:700;color:var(--ink);font-size:12px}
+.fbbox{background:var(--paper2);border:1px solid var(--bd);border-radius:var(--rsm);padding:.875rem 1rem;font-size:14px;color:var(--ink2);line-height:1.85;margin-top:1rem}
+
+/* summary */
+.trophy{text-align:center;padding:2rem 0 1rem}
+.trophy span{font-size:60px;display:block;margin-bottom:.5rem}
+.trophy h2{font-size:23px;font-weight:700}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:1rem 0}
+.sstat{background:var(--paper2);border:1px solid var(--bd);border-radius:var(--rsm);padding:1rem;text-align:center}
+.sstat .sv{font-size:26px;font-weight:700;font-family:-apple-system,sans-serif}
+.sstat .sl{font-size:11px;color:var(--ink3);font-family:-apple-system,sans-serif}
+
+/* teacher */
+.tbanner{background:var(--navy);color:#cdd8f0;padding:1.25rem 1rem 1rem}
+.tbanner h2{font-size:19px;font-weight:700}
+.tbanner p{font-size:12px;color:#8898cc;font-family:-apple-system,sans-serif;margin-top:3px}
+.ctabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.ctab{padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--ink3);font-family:-apple-system,sans-serif;transition:all .15s}
+.ctab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
+.tstat{background:#fff;border:1px solid var(--bd);border-radius:var(--rsm);padding:.875rem;text-align:center;box-shadow:var(--sh)}
+.tstat .tv{font-size:23px;font-weight:700;font-family:-apple-system,sans-serif}
+.tstat .tl{font-size:11px;color:var(--ink3);font-family:-apple-system,sans-serif}
+.tvb{color:var(--blue)}.tvg{color:var(--green)}.tva{color:var(--amber)}
+.tbox{background:#fff;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:1rem}
+.tboxh{padding:.75rem 1rem;border-bottom:1px solid var(--bd);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif}
+table{width:100%;border-collapse:collapse;font-size:13px;font-family:-apple-system,sans-serif}
+th{padding:7px 9px;text-align:left;color:var(--ink3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--paper2);border-bottom:1px solid var(--bd)}
+td{padding:10px 9px;border-bottom:1px solid var(--paper3);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--paper2)}
+.pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:12px;font-weight:700}
+.pA{background:var(--greenl);color:var(--green)}.pB{background:var(--bluel);color:var(--blue)}
+.pC{background:var(--amberl);color:var(--amber)}.pD{background:var(--redl);color:var(--red)}
+.pdots{display:flex;gap:3px}
+.pd{width:9px;height:9px;border-radius:50%;background:var(--paper3)}.pd.on{background:var(--blue)}
+
+/* loading & error */
+.spinwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem;gap:1rem}
+.spin{width:32px;height:32px;border:3px solid var(--paper3);border-top-color:var(--navy);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.stxt{font-size:14px;color:var(--ink3);font-family:-apple-system,sans-serif}
+.errmsg{background:var(--redl);border:1px solid #f0b0a8;border-radius:var(--rsm);padding:.875rem 1rem;color:var(--red);font-size:14px;font-family:-apple-system,sans-serif;line-height:1.7;margin-bottom:1rem}
+.errmsg b{display:block;margin-bottom:.3rem}
+
+/* toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:var(--rsm);font-size:14px;font-weight:600;z-index:9999;font-family:-apple-system,sans-serif;animation:tu .25s ease;pointer-events:none;white-space:nowrap}
+@keyframes tu{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+@media(max-width:480px){
+  .clist{grid-template-columns:1fr}
+  th:nth-child(4),td:nth-child(4){display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-l">✉ <b>Email</b> 寫作練習｜洪瓊芳老師</div>
+  <div class="bar-r"><span class="bar-name" id="topName"></span><span id="topBadge"></span></div>
+</div>
+
+<!-- ── 登入 ── -->
+<div id="S0" class="screen on">
+  <div class="hero">
+    <span class="hero-i">📝</span>
+    <h1>一鍵傳輸專業感</h1>
+    <p>拒絕 Error 的職場信件練習 · AI 即時評分</p>
+  </div>
+  <div class="lbox">
+    <div class="tabs">
+      <button class="tab on" id="tabS" onclick="setTab('s')">🎓 學生</button>
+      <button class="tab"    id="tabT" onclick="setTab('t')">👩‍🏫 教師</button>
+    </div>
+    <div id="sflds">
+      <div class="fld">
+        <label>班級</label>
+        <select id="sCls">
+          <option value="">請選擇班級</option>
+          <option>光電一甲</option>
+          <option>光電一乙</option>
+          <option>工管一乙</option>
+        </select>
+      </div>
+      <div class="fld"><label>學號</label><input id="sId" placeholder="例：B11234567"/></div>
+      <div class="fld"><label>姓名</label><input id="sNm" placeholder="請輸入真實姓名"/></div>
+      <button class="btn bnavy bfull" onclick="loginS()">開始練習 →</button>
+    </div>
+    <div id="tflds" style="display:none">
+      <div class="fld"><label>教師姓名</label><input id="tNm" placeholder="例：洪老師"/></div>
+      <div class="fld"><label>教師密碼</label><input id="tPw" type="password" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')loginT()"/></div>
+      <button class="btn bnavy bfull" onclick="loginT()">進入教師儀表板 →</button>
+      <p class="hint">⚠ 密碼保護，學生無法進入此頁</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── 遊戲 ── -->
+<div id="S1" class="screen">
+  <div class="wrap">
+    <div class="pgbar" id="pgbar"></div>
+    <div id="mArea"></div>
+    <div class="cmp" id="cmpBox">
+      <div class="crow"><span class="clbl">收件人</span><input id="fTo" readonly style="color:var(--ink3);font-size:13px"/></div>
+      <div class="crow"><span class="clbl">主旨</span><input id="fSubj" oninput="lchk()"/></div>
+      <div class="cbody"><textarea id="fBody" placeholder="在此撰寫信件內文……" oninput="lchk()"></textarea></div>
+      <div class="cfoot"><span id="wcnt">0 字</span><span>建議 100 字以上</span></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:1rem" id="actRow">
+      <button class="btn bghost" onclick="clrDraft()">清除</button>
+      <button class="btn bnavy" onclick="doSubmit()">送出評分 ✦</button>
+    </div>
+    <div id="loadBox" style="display:none"><div class="card"><div class="spinwrap"><div class="spin"></div><p class="stxt">AI 批改中，請稍候……</p></div></div></div>
+    <div id="resBox" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ── 總結 ── -->
+<div id="S2" class="screen">
+  <div class="wrap">
+    <div class="trophy"><span>🏆</span><h2>恭喜完成全部關卡！</h2><p id="subT" style="color:var(--ink3);font-size:14px;font-family:-apple-system,sans-serif;margin-top:.25rem"></p></div>
+    <div class="sgrid" id="sgrid"></div>
+    <div class="card" id="sbars" style="margin-bottom:1rem"></div>
+    <button class="btn bghost bfull" onclick="replay()">重新挑戰</button>
+  </div>
+</div>
+
+<!-- ── 教師 ── -->
+<div id="S3" class="screen">
+  <div class="tbanner"><h2>👩‍🏫 教師成績儀表板</h2><p>即時同步 · 依班級篩選 · 自動計算等第</p></div>
+  <div class="wrap" style="padding-top:0">
+    <div class="ctabs" id="ctabs"></div>
+    <div class="tstats" id="tstats"></div>
+    <div class="tbox">
+      <div class="tboxh"><span id="ttitle">學生成績一覽</span>
+        <button class="btn bghost" style="font-size:12px;padding:5px 12px" onclick="loadT()">↻ 更新</button>
+      </div>
+      <div id="ttbl"><div class="spinwrap"><div class="spin"></div></div></div>
+    </div>
+    <button class="btn bghost bfull" onclick="logoutT()">登出</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   關卡資料（根據洪老師 PPT 設計）
+════════════════════════════════════ */
+const LVS = [
+  {
+    id:1, title:"請假信", tag:"第一關 · 基礎",
+    to:"professor.hung@school.edu.tw",
+    scene:`你是<em>光電／工管一年級</em>的學生，<em>下週四上午</em>需要回診（或家中有突發狀況），無法出席國文課。
+請依課堂教的格式，寫一封<em>正式請假信</em>給洪老師，包含：① 交代身分與課程　② 說明日期與原因　③ 詢問補課或作業方式　④ 禮貌結語。`,
+    subjHint:"主旨範例：【光電一甲 B11234567 王小明】下週四國文課請假申請",
+    tips:["💡 主旨要含班級、學號、姓名","📌 開頭先交代「我是誰＋修什麼課」","📅 說明請假日期與具體原因","📚 詢問補課或作業","✍️ 結尾寫出希望老師如何回覆"],
+    pts:["主旨含身分摘要","正式稱謂","自我介紹＋課程","日期與原因","詢問補課/作業","禮貌結語"],
+    chk:[
+      t=>/光電|工管|班|學號|[Bb]\d{5,}/.test(t),
+      t=>/老師|洪老師|professor|dear/i.test(t),
+      t=>/我是|修習|選修|本學期/.test(t),
+      t=>/週四|下週|日期|因為|回診|身體|家中|突發/.test(t),
+      t=>/補課|作業|補交|進度|後續/.test(t),
+      t=>/謝謝|感謝|敬上|此致|順心|麻煩/.test(t),
+    ]
+  },
+  {
+    id:2, title:"詢問信（5W架構）", tag:"第二關 · 進階",
+    to:"professor.hung@school.edu.tw",
+    scene:`你的小組<em>期末專題報告</em>下週要繳交，但不確定：<br>
+① 報告頁數限制　② 是否需要附參考文獻　③ 繳交方式（系統上傳？還是紙本？）<br><br>
+請依課堂教的 <em>What / Why / When / What you need / How</em> 架構，寫一封完整的詢問信給老師。`,
+    subjHint:"主旨範例：【工管一乙 B11234567 陳怡婷】詢問期末專題報告繳交規定",
+    tips:["🎯 主旨就是信的摘要，讓老師一眼知道你要問什麼","📋 列出具體問題，不要讓老師猜","⏰ 說明截止時間（When）","💡 說明已有哪些準備（How）"],
+    pts:["主旨含身分＋事由","稱謂＋自我介紹","說明背景（What/Why/When）","列出具體問題","說明已做的準備","禮貌請求回覆"],
+    chk:[
+      t=>/老師|professor|dear/i.test(t),
+      t=>/我是|光電|工管|修習/.test(t),
+      t=>/專題|報告|作業|下週|截止/.test(t),
+      t=>/請問|想確認|不確定|詢問/.test(t),
+      t=>((t.match(/請問|想確認|頁數|格式|上傳|繳交|參考文獻/g)||[]).length>=2),
+      t=>/謝謝|感謝|麻煩|撥空|回覆/.test(t),
+    ]
+  },
+  {
+    id:3, title:"職場情境信", tag:"第三關 · 挑戰",
+    to:"hr@company.com.tw",
+    scene:`請從以下情境<em>擇一</em>撰寫，並在主旨說明你選哪題：<br><br>
+<em>情境 A（光電適用）</em>：你到光學公司面試實習生，面試後人資請你補寄成績單與作品集，請寫補件信。<br><br>
+<em>情境 B（工管適用）</em>：你的小組要寫信給廠商，詢問產品報價、交期與最低訂購量，請以「學生模擬商業信件」撰寫。`,
+    subjHint:"範例A：【補件】光電實習申請－王小明　/ 　範例B：詢問OO產品報價及交期－工管一乙第3組",
+    tips:["💼 職場信件語氣要更正式、簡潔","📎 補件信要說清楚附了什麼、為何補","💰 詢價信要列出具體項目（報價、交期、MOQ）","🔮 結尾說明期望的回覆時間"],
+    pts:["主旨清楚完整","正式稱謂","自我介紹＋來意","主要內容完整","提出後續行動","專業結語"],
+    chk:[
+      t=>/老師|人資|hr|主任|先生|小姐|dear/i.test(t),
+      t=>/我是|光電|工管|學生/.test(t),
+      t=>/補件|補寄|附上|詢價|報價|詢問/i.test(t),
+      t=>/成績單|作品|作品集|報價|交期|訂購|規格/.test(t),
+      t=>/請|懇請|希望|期待|方便/.test(t),
+      t=>/謝謝|感謝|敬祝|此致|regards/i.test(t),
+    ]
+  }
+];
+
+/* ════ 成績存儲（JSONBin.io） ════
+   自動建立 Bin，免手動設定
+════════════════════════════════ */
+let _binId = (typeof BIN_ID !== 'undefined' ? BIN_ID : '') || localStorage.getItem('__binId') || '';
+
+async function dbRead(){
+  if(!_binId) return {};
+  const r = await fetch(`https://api.jsonbin.io/v3/b/${_binId}/latest`,{
+    headers:{'X-Master-Key': JSONBIN_KEY}
+  });
+  if(!r.ok) return {};
+  const d = await r.json();
+  return d.record || {};
+}
+
+async function dbWrite(data){
+  if(!JSONBIN_KEY || JSONBIN_KEY.startsWith('貼上')) return;
+  if(!_binId){
+    // 自動建立 Bin
+    const r = await fetch('https://api.jsonbin.io/v3/b',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Name':'email-game-scores','X-Bin-Private':'false'},
+      body: JSON.stringify(data)
+    });
+    if(r.ok){
+      const d = await r.json();
+      _binId = d.metadata.id;
+      localStorage.setItem('__binId', _binId);
+    }
+  } else {
+    await fetch(`https://api.jsonbin.io/v3/b/${_binId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+      body: JSON.stringify(data)
+    });
+  }
+}
+
+async function saveScore(lvId, score){
+  try{
+    const key = `${ST.cls}__${ST.id}`.replace(/\s/g,'_');
+    let all = await dbRead();
+    if(!all[key]) all[key]={name:ST.name,cls:ST.cls,stuId:ST.id};
+    all[key][`lv${lvId}`] = score;
+    all[key].updatedAt = new Date().toISOString();
+    await dbWrite(all);
+  }catch(e){ console.warn('成績儲存失敗：',e); }
+}
+
+/* ════ App State ════ */
+const ST = {cls:'',id:'',name:'',lvIdx:0,scores:[null,null,null]};
+
+/* ════ Helpers ════ */
+function show(id){
+  ['S0','S1','S2','S3'].forEach(s=>{
+    const el=document.getElementById(s);
+    el.classList.toggle('on',s===id);
+    el.style.display = s===id?(s==='S0'?'flex':'block'):'none';
+  });
+}
+function setTop(n,b){
+  document.getElementById('topName').textContent=n||'';
+  document.getElementById('topBadge').innerHTML=b?`<span class="lvbadge">${b}</span>`:'';
+}
+function toast(m){
+  const el=document.createElement('div');el.className='toast';el.textContent=m;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2500);
+}
+
+/* ════ Login ════ */
+function setTab(t){
+  document.getElementById('tabS').classList.toggle('on',t==='s');
+  document.getElementById('tabT').classList.toggle('on',t==='t');
+  document.getElementById('sflds').style.display=t==='s'?'block':'none';
+  document.getElementById('tflds').style.display=t==='t'?'block':'none';
+}
+function loginS(){
+  const c=document.getElementById('sCls').value;
+  const i=document.getElementById('sId').value.trim();
+  const n=document.getElementById('sNm').value.trim();
+  if(!c){toast('請選擇班級');return;}
+  if(!i){toast('請輸入學號');return;}
+  if(!n){toast('請輸入姓名');return;}
+  ST.cls=c;ST.id=i;ST.name=n;ST.scores=[null,null,null];
+  setTop(`${c} ${n}`,'');
+  goLv(0);
+}
+function loginT(){
+  if(document.getElementById('tPw').value!==TEACHER_PW){toast('密碼錯誤');return;}
+  setTop(`教師：${document.getElementById('tNm').value.trim()||'洪老師'}`,'儀表板');
+  show('S3');loadT();
+}
+function logoutT(){
+  show('S0');
+  document.getElementById('topName').textContent='';
+  document.getElementById('topBadge').innerHTML='';
+  document.getElementById('tPw').value='';
+}
+
+/* ════ Game ════ */
+function goLv(idx){
+  ST.lvIdx=idx;
+  show('S1');
+  document.getElementById('resBox').style.display='none';
+  document.getElementById('loadBox').style.display='none';
+  document.getElementById('actRow').style.display='flex';
+  setTop(`${ST.cls} ${ST.name}`,`第 ${idx+1} 關`);
+
+  document.getElementById('pgbar').innerHTML=LVS.map((_,i)=>
+    `<div class="pseg ${i<idx?'done':i===idx?'cur':''}"></div>`).join('');
+
+  const lv=LVS[idx];
+  document.getElementById('mArea').innerHTML=`
+    <div class="card">
+      <div class="mtag">✦ ${lv.tag}</div>
+      <div class="mtitle">${lv.title}</div>
+      <div class="mscene">${lv.scene}</div>
+      <div class="tips">${lv.tips.map(t=>`<span class="tip">${t}</span>`).join('')}</div>
+      <div class="cltitle">寫作要點檢核（完成後自動打勾）</div>
+      <div class="clist">${lv.pts.map((p,i)=>`<div class="ci" id="ci${i}"><div class="cdot" id="cd${i}"></div>${p}</div>`).join('')}</div>
+    </div>`;
+
+  document.getElementById('fTo').value=lv.to;
+  document.getElementById('fSubj').value='';
+  document.getElementById('fSubj').placeholder=lv.subjHint;
+  document.getElementById('fBody').value='';
+  document.getElementById('wcnt').textContent='0 字';
+}
+
+function lchk(){
+  const lv=LVS[ST.lvIdx];
+  const t=document.getElementById('fSubj').value+' '+document.getElementById('fBody').value;
+  document.getElementById('wcnt').textContent=`${t.replace(/\s/g,'').length} 字`;
+  lv.chk.forEach((fn,i)=>{
+    const ok=fn(t);
+    document.getElementById('ci'+i)?.classList.toggle('on',ok);
+    const cd=document.getElementById('cd'+i);
+    if(cd)cd.textContent=ok?'✓':'';
+  });
+}
+function clrDraft(){
+  document.getElementById('fSubj').value='';
+  document.getElementById('fBody').value='';
+  lchk();
+}
+
+/* ════ Submit ════ */
+async function doSubmit(){
+  const subj=document.getElementById('fSubj').value.trim();
+  const body=document.getElementById('fBody').value.trim();
+  if(!subj){toast('請填寫主旨');return;}
+  if(body.length<40){toast('內文太短，請再補充');return;}
+
+  // 檢查 API Key
+  if(!CLAUDE_KEY||CLAUDE_KEY.startsWith('貼上')||CLAUDE_KEY.length<20){
+    document.getElementById('resBox').style.display='block';
+    document.getElementById('resBox').innerHTML=`<div class="errmsg"><b>⚠ Claude API Key 尚未填入</b>請用記事本開啟 HTML 檔案，將最上方的 CLAUDE_KEY 填入你的 API Key。<br>取得位置：<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>`;
+    return;
+  }
+
+  document.getElementById('actRow').style.display='none';
+  document.getElementById('loadBox').style.display='block';
+
+  const lv=LVS[ST.lvIdx];
+  const prompt=`你是大學國文老師，專門批改 Email 寫作。請評估以下學生信件。
+
+學生：${ST.cls} ${ST.id} ${ST.name}
+情境：${lv.scene.replace(/<br>|<[^>]+>/g,' ')}
+
+信件內容：
+主旨：${subj}
+內文：${body}
+
+只輸出以下 JSON，不得有其他文字：
+{"subj":整數0到20,"greeting":整數0到15,"intro":整數0到20,"content":整數0到25,"closing":整數0到20,"total":總和0到100,"grade":"A或B或C或D","feedback":"評語50至80字，先說優點再說改進，繁體中文，語氣像老師批改作業"}
+
+評分：subj=主旨含身分摘要是否清楚(20)，greeting=稱謂正式有禮(15)，intro=自我介紹與來意(20)，content=正文資訊完整5W(25)，closing=結語明確有禮(20)，grade: A≥90 B≥75 C≥60 D<60`;
+
+  let result=null, errMsg='';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':CLAUDE_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5',
+        max_tokens:500,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    if(!resp.ok){
+      const txt=await resp.text();
+      throw new Error(`HTTP ${resp.status}：${txt.slice(0,200)}`);
+    }
+    const data=await resp.json();
+    if(data.error) throw new Error(data.error.message);
+    const raw=data.content?.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    result=JSON.parse(raw);
+  }catch(e){
+    errMsg=e.message||String(e);
+    console.error('評分錯誤：',e);
+  }
+
+  document.getElementById('loadBox').style.display='none';
+
+  if(!result){
+    document.getElementById('resBox').style.display='block';
+    document.getElementById('actRow').style.display='flex';
+    document.getElementById('resBox').innerHTML=`
+      <div class="errmsg">
+        <b>⚠ AI 評分失敗，請確認以下幾點：</b>
+        1. CLAUDE_KEY 是否已正確填入（開頭應為 sk-ant-）<br>
+        2. API Key 是否有足夠額度（<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> 查看）<br>
+        3. 網路是否正常<br><br>
+        錯誤訊息：${errMsg}
+      </div>
+      <button class="btn bghost bfull" onclick="retrySubmit()">重新送出</button>`;
+    return;
+  }
+
+  ST.scores[ST.lvIdx]=result.total;
+  await saveScore(lv.id, result.total);
+  showResult(result);
+}
+
+function retrySubmit(){
+  document.getElementById('resBox').style.display='none';
+  doSubmit();
+}
+
+function showResult(r){
+  const rb=document.getElementById('resBox');
+  rb.style.display='block';
+  const isLast=ST.lvIdx===LVS.length-1;
+  const nxt=isLast
+    ?`<button class="btn bgold bfull" onclick="showSum()">查看總成績 🏆</button>`
+    :`<button class="btn bnavy bfull" onclick="goLv(${ST.lvIdx+1})">下一關 →</button>`;
+
+  const bars=[
+    {n:'主旨(20)',v:r.subj,m:20,c:'#1a6ea6'},
+    {n:'稱謂(15)',v:r.greeting,m:15,c:'#1a8c49'},
+    {n:'自我介紹(20)',v:r.intro,m:20,c:'#7c3aed'},
+    {n:'正文(25)',v:r.content,m:25,c:'#c07800'},
+    {n:'結語(20)',v:r.closing,m:20,c:'#bf3b2b'},
+  ];
+
+  rb.innerHTML=`
+    <div class="card g${r.grade}" style="text-align:center;margin-bottom:1rem">
+      <div class="sring"><span class="sn">${r.total}</span><span class="sl">/ 100</span></div>
+      <div class="gword">等第 ${r.grade}</div>
+      <div class="gsub">${LVS[ST.lvIdx].title}｜${ST.cls} ${ST.id} ${ST.name}</div>
+    </div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="barlist">${bars.map(b=>`
+        <div class="brow">
+          <span class="bname">${b.n}</span>
+          <div class="btrack"><div class="bfill" style="width:${Math.round(b.v/b.m*100)}%;background:${b.c}"></div></div>
+          <span class="bval">${Math.round(b.v)}/${b.m}</span>
+        </div>`).join('')}</div>
+      <div class="fbbox">💬 ${r.feedback}</div>
+    </div>
+    <div style="margin-bottom:.75rem">${nxt}</div>
+    <button class="btn bghost bfull" onclick="goLv(${ST.lvIdx})" style="margin-bottom:1rem">重新作答此題</button>`;
+}
+
+function showSum(){
+  show('S2');
+  const v=ST.scores.filter(s=>s!=null);
+  const avg=v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;
+  const g=avg>=90?'A':avg>=75?'B':avg>=60?'C':'D';
+  document.getElementById('subT').textContent=`${ST.cls} ${ST.id} ${ST.name}｜平均 ${avg} 分，等第 ${g}`;
+  document.getElementById('sgrid').innerHTML=`
+    <div class="sstat"><div class="sv" style="color:var(--blue)">${avg}</div><div class="sl">平均分數</div></div>
+    <div class="sstat"><div class="sv" style="color:var(--green)">${g}</div><div class="sl">整體等第</div></div>
+    <div class="sstat"><div class="sv" style="color:var(--amber)">${v.length}/${LVS.length}</div><div class="sl">完成關卡</div></div>`;
+  document.getElementById('sbars').innerHTML=`
+    <div class="cltitle" style="margin-bottom:.75rem">各關成績</div>
+    ${LVS.map((lv,i)=>`
+      <div class="brow" style="margin-bottom:10px">
+        <span class="bname" style="width:90px">${lv.title}</span>
+        <div class="btrack"><div class="bfill" style="width:${ST.scores[i]||0}%;background:var(--navy)"></div></div>
+        <span class="bval">${ST.scores[i]??'—'}</span>
+      </div>`).join('')}`;
+}
+function replay(){ST.scores=[null,null,null];goLv(0);}
+
+/* ════ Teacher ════ */
+let allStu=[], clsF='全部班級';
+
+async function loadT(){
+  document.getElementById('ttbl').innerHTML='<div class="spinwrap"><div class="spin"></div></div>';
+  allStu=[];
+
+  if(!JSONBIN_KEY||JSONBIN_KEY.startsWith('貼上')){
+    document.getElementById('ttbl').innerHTML='<div style="padding:2rem;text-align:center;color:var(--red);font-family:-apple-system,sans-serif;font-size:14px">⚠ JSONBin API Key 尚未設定<br><small>填入後學生作答的成績就會在這裡顯示</small></div>';
+    document.getElementById('tstats').innerHTML='';
+    document.getElementById('ctabs').innerHTML='';
+    return;
+  }
+
+  try{
+    const data=await dbRead();
+    allStu=Object.values(data);
+  }catch(e){
+    document.getElementById('ttbl').innerHTML=`<div style="padding:2rem;text-align:center;color:var(--red);font-family:-apple-system,sans-serif;font-size:14px">⚠ 讀取失敗：${e.message}</div>`;
+    return;
+  }
+
+  const cls=['全部班級',...new Set(allStu.map(s=>s.cls).filter(Boolean))].sort((a,b)=>a==='全部班級'?-1:0);
+  if(!cls.includes(clsF)) clsF='全部班級';
+  document.getElementById('ctabs').innerHTML=cls.map(c=>`<button class="ctab${c===clsF?' on':''}" onclick="fCls('${c}')">${c}</button>`).join('');
+  renderT();
+}
+
+function fCls(c){
+  clsF=c;
+  document.querySelectorAll('.ctab').forEach(b=>b.classList.toggle('on',b.textContent===c));
+  renderT();
+}
+
+function renderT(){
+  const list=clsF==='全部班級'?allStu:allStu.filter(s=>s.cls===clsF);
+  const sc=list.flatMap(s=>[s.lv1,s.lv2,s.lv3].filter(x=>x!=null));
+  const avg=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):0;
+  const pass=sc.length?Math.round(sc.filter(s=>s>=60).length/sc.length*100):0;
+
+  document.getElementById('tstats').innerHTML=`
+    <div class="tstat"><div class="tv tvb">${list.length}</div><div class="tl">學生人數</div></div>
+    <div class="tstat"><div class="tv tvg">${avg}</div><div class="tl">平均分數</div></div>
+    <div class="tstat"><div class="tv tva">${pass}%</div><div class="tl">及格率(≥60)</div></div>`;
+  document.getElementById('ttitle').textContent=`${clsF}`;
+
+  if(!list.length){document.getElementById('ttbl').innerHTML='<div style="padding:2rem;text-align:center;color:var(--ink3);font-family:-apple-system,sans-serif">此班級尚無作答紀錄</div>';return;}
+
+  function ra(s){const d=[s.lv1,s.lv2,s.lv3].filter(x=>x!=null);return d.length?Math.round(d.reduce((a,b)=>a+b,0)/d.length):null;}
+  function gof(v){if(v==null)return'—';return v>=90?'A':v>=75?'B':v>=60?'C':'D';}
+  function pc(g){return{A:'pA',B:'pB',C:'pC',D:'pD'}[g]||'';}
+  function dots(s){return[s.lv1,s.lv2,s.lv3].map(v=>`<div class="pd${v!=null?' on':''}"></div>`).join('');}
+
+  const sorted=[...list].sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||(a.stuId||'').localeCompare(b.stuId||''));
+  document.getElementById('ttbl').innerHTML=`
+    <table>
+      <thead><tr><th>班級</th><th>學號</th><th>姓名</th><th>進度</th>
+        <th>${LVS[0].title}</th><th>${LVS[1].title}</th><th>${LVS[2].title}</th>
+        <th>平均</th><th>等第</th></tr></thead>
+      <tbody>${sorted.map(s=>{
+        const av=ra(s),g=gof(av);
+        return`<tr><td>${s.cls||'—'}</td><td style="color:var(--ink3);font-size:12px">${s.stuId||'—'}</td>
+          <td style="font-weight:700">${s.name||'—'}</td>
+          <td><div class="pdots">${dots(s)}</div></td>
+          <td>${s.lv1??'—'}</td><td>${s.lv2??'—'}</td><td>${s.lv3??'—'}</td>
+          <td style="font-weight:700">${av??'—'}</td>
+          <td><span class="pill ${pc(g)}">${g}</span></td></tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+setTab('s');
+</script>
+</body>
+</html>
